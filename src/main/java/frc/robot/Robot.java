@@ -148,7 +148,6 @@ public class Robot extends LoggedRobot {
                         * 0.25)));
 
     Logger.start();
-    
   }
 
   @Override

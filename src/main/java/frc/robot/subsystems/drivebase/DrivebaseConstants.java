@@ -131,10 +131,6 @@ public class DrivebaseConstants {
           .withSlot0(new Slot0Configs().withKS(0.27).withKP(25).withKD(0.7))
           .withClosedLoopGeneral(new ClosedLoopGeneralConfigs().withContinuousWrap(true));
 
-
-  
-
-
   // Choreo PIDControllers
 
   public static final PIDController kChoreoXController = new PIDController(1.6, 0, 0);

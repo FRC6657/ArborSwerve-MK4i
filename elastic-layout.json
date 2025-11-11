@@ -39,45 +39,6 @@
             }
           },
           {
-            "title": "Elevator Level",
-            "x": 256.0,
-            "y": 128.0,
-            "width": 256.0,
-            "height": 256.0,
-            "type": "Large Text Display",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/RobotStates/Elevator Level",
-              "period": 0.06,
-              "data_type": "int"
-            }
-          },
-          {
-            "title": "Selected Piece",
-            "x": 512.0,
-            "y": 128.0,
-            "width": 256.0,
-            "height": 256.0,
-            "type": "Large Text Display",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/RobotStates/Selected Piece",
-              "period": 0.06,
-              "data_type": "string"
-            }
-          },
-          {
-            "title": "Selected Reef",
-            "x": 768.0,
-            "y": 128.0,
-            "width": 256.0,
-            "height": 256.0,
-            "type": "Large Text Display",
-            "properties": {
-              "topic": "/AdvantageKit/RealOutputs/RobotStates/Selected Reef",
-              "period": 0.06,
-              "data_type": "string"
-            }
-          },
-          {
             "title": "CAN Utilization",
             "x": 0.0,
             "y": 256.0,
@@ -89,40 +50,6 @@
               "period": 0.06,
               "data_type": "float",
               "show_submit_button": false
-            }
-          },
-          {
-            "title": "White Cam",
-            "x": 256.0,
-            "y": 0.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/Vision/Camera0/Connected",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "Black Cam",
-            "x": 512.0,
-            "y": 0.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/AdvantageKit/Vision/Camera1/Connected",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
             }
           }
         ]
