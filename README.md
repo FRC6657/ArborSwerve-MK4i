@@ -7,5 +7,6 @@ This template is designed to be used with:
 * Pigeon2 or Canandgyro
 * Photonvision
 
-Swerve Code based on the Advantage Kit TalonFX Template
-Vision Codebased on the Advantage Kit Vision Template
+Swerve implementation based on the Advantage Kit TalonFX Template
+
+Vision implementation based on the Advantage Kit Vision Template
