@@ -1,8 +1,10 @@
 package frc.robot.subsystems.drivebase;
 
 import choreo.trajectory.SwerveSample;
+import com.pathplanner.lib.util.DriveFeedforwards;
+import com.pathplanner.lib.util.swerve.SwerveSetpoint;
+import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -37,6 +39,8 @@ public class Drivebase extends SubsystemBase {
 
   private final SwerveDriveKinematics kinematics;
   private final SwerveDrivePoseEstimator poseEstimator;
+  private final SwerveSetpointGenerator setpointGenerator;
+  private SwerveSetpoint previousSetpoint;
 
   static final Lock odometryLock = new ReentrantLock();
 
@@ -50,6 +54,8 @@ public class Drivebase extends SubsystemBase {
 
   public Drivebase(GyroIO gyroIO, ModuleIO[] moduleIOs) {
 
+    this.modules = new Module[moduleIOs.length];
+
     this.kinematics = new SwerveDriveKinematics(DrivebaseConstants.kModuleTranslations);
     this.poseEstimator =
         new SwerveDrivePoseEstimator(
@@ -61,13 +67,23 @@ public class Drivebase extends SubsystemBase {
               new SwerveModulePosition(),
               new SwerveModulePosition()
             },
-            new Pose2d(),
-            VecBuilder.fill(0.6, 0.6, 0.07),
-            VecBuilder.fill(
-                Units.inchesToMeters(80), Units.inchesToMeters(80), Units.degreesToRadians(60)));
+            new Pose2d());
+
+    this.setpointGenerator =
+        new SwerveSetpointGenerator(
+            DrivebaseConstants.kPathPlannerConfig, DrivebaseConstants.kMaxAzimuthSpeed);
+    previousSetpoint =
+        new SwerveSetpoint(
+            new ChassisSpeeds(),
+            new SwerveModuleState[] {
+              new SwerveModuleState(),
+              new SwerveModuleState(),
+              new SwerveModuleState(),
+              new SwerveModuleState()
+            },
+            DriveFeedforwards.zeros(moduleIOs.length));
 
     this.gyroIO = gyroIO;
-    this.modules = new Module[moduleIOs.length];
 
     for (int i = 0; i < moduleIOs.length; i++) {
       modules[i] = new Module(moduleIOs[i]);
@@ -133,18 +149,15 @@ public class Drivebase extends SubsystemBase {
    */
   public void drive(ChassisSpeeds speeds, boolean openLoop) {
 
-    speeds = ChassisSpeeds.discretize(speeds, 0.02);
-    final SwerveModuleState[] moduleStates = kinematics.toSwerveModuleStates(speeds);
-    SwerveDriveKinematics.desaturateWheelSpeeds(moduleStates, DrivebaseConstants.kMaxLinearSpeed);
-    final SwerveModuleState[] optimizedModuleStates = new SwerveModuleState[moduleStates.length];
+    previousSetpoint = setpointGenerator.generateSetpoint(previousSetpoint, speeds, 0.02);
 
-    for (int i = 0; i < moduleStates.length; i++) {
-      optimizedModuleStates[i] = modules[i].runSetpoint(moduleStates[i], openLoop); // Run setpoints
+    for (int i = 0; i < previousSetpoint.moduleStates().length; i++) {
+      modules[i].runSetpoint(previousSetpoint.moduleStates()[i], openLoop); // Run setpoints
     }
 
-    Logger.recordOutput("Swerve/ModuleSetpoints", optimizedModuleStates);
+    Logger.recordOutput("Swerve/Module Setpoints", previousSetpoint.moduleStates());
     Logger.recordOutput(
-        "Swerve/ModuleStates",
+        "Swerve/Module States",
         Arrays.stream(modules).map(m -> m.getState()).toArray(SwerveModuleState[]::new));
   }
 
@@ -187,7 +200,7 @@ public class Drivebase extends SubsystemBase {
                   DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
                       ? getPose().getRotation()
                       : getPose().getRotation().minus(Rotation2d.fromDegrees(180)));
-          this.drive(speed, true);
+          this.drive(speed, false);
         });
   }
 

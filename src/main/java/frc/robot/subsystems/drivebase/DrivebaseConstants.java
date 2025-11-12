@@ -1,5 +1,7 @@
 package frc.robot.subsystems.drivebase;
 
+import static edu.wpi.first.units.Units.*;
+
 import com.ctre.phoenix6.configs.ClosedLoopGeneralConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -8,6 +10,8 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -45,8 +49,8 @@ public class DrivebaseConstants {
   public static final double kFrameLength = Units.inchesToMeters(29); // +- X Direction
   public static final double kMK4iTW_Offset = Units.inchesToMeters(2.625);
 
-  public static final double kTrackWidthX = Units.inchesToMeters(kFrameLength - kMK4iTW_Offset * 2);
-  public static final double kTrackWidthY = Units.inchesToMeters(kFrameWidth - kMK4iTW_Offset * 2);
+  public static final double kTrackWidthX = (kFrameLength - kMK4iTW_Offset * 2);
+  public static final double kTrackWidthY = (kFrameWidth - kMK4iTW_Offset * 2);
 
   public static final Translation2d[] kModuleTranslations = {
     new Translation2d(kTrackWidthX / 2, kTrackWidthY / 2),
@@ -93,20 +97,25 @@ public class DrivebaseConstants {
       (Units.radiansPerSecondToRotationsPerMinute(kDriveMotor.freeSpeedRadPerSec) / 60d)
           * 1d
           / kDriveRatio
-          * (kDriveWheelDiameter * Math.PI); // Meters Per Second
+          * (kDriveWheelDiameter * Math.PI)
+          * 0.8; // Meters Per Second
   public static final double kMaxLinearAcceleration =
       8; // Meters per second per second (rough underestimate of the traction limit)
   public static final double kMaxAngularSpeed =
       kMaxLinearSpeed / Math.hypot(kTrackWidthX / 2d, kTrackWidthY / 2d); // Radians per second
+  public static final double kMaxAzimuthSpeed =
+      (kTurnMotor.freeSpeedRadPerSec) * (1d / kTurnRatio) * 0.9;
+
+  public static double kDriveStatorLimit = 80; // Amps
 
   // Motor Configurations
   public static TalonFXConfiguration driveConfig =
       new TalonFXConfiguration()
           .withCurrentLimits(
               new CurrentLimitsConfigs()
-                  .withSupplyCurrentLimit(40)
+                  .withSupplyCurrentLimit(60)
                   .withSupplyCurrentLimitEnable(true)
-                  .withStatorCurrentLimit(80)
+                  .withStatorCurrentLimit(kDriveStatorLimit)
                   .withStatorCurrentLimitEnable(true))
           .withMotorOutput(
               new MotorOutputConfigs()
@@ -136,4 +145,19 @@ public class DrivebaseConstants {
   public static final PIDController kChoreoXController = new PIDController(1.6, 0, 0);
   public static final PIDController kChoreoYController = new PIDController(1.6, 0, 0);
   public static final PIDController kChoreoThetaController = new PIDController(1.2, 0, 0);
+
+  // Path Planner
+
+  public static final RobotConfig kPathPlannerConfig =
+      new RobotConfig(
+          Pounds.of(150),
+          KilogramSquareMeters.of(6),
+          new ModuleConfig(
+              kDriveWheelDiameter / 2d,
+              kMaxLinearSpeed,
+              1.0,
+              kDriveMotor.withReduction(DrivebaseConstants.kDriveRatio),
+              kDriveStatorLimit,
+              1),
+          kModuleTranslations);
 }

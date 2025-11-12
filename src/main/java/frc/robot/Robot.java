@@ -147,6 +147,12 @@ public class Robot extends LoggedRobot {
                         * DrivebaseConstants.kMaxAngularSpeed
                         * 0.25)));
 
+    System.out.println("Linear Speed: " + DrivebaseConstants.kMaxLinearSpeed);
+    System.out.println("Angular Speed: " + DrivebaseConstants.kMaxAngularSpeed);
+
+    autoChooser.addOption(
+        "TestAuto", Commands.run(() -> drivebase.drive(new ChassisSpeeds(1, 0, 0))));
+
     Logger.start();
   }
 
