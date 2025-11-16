@@ -11,7 +11,9 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -147,6 +149,12 @@ public class DrivebaseConstants {
   public static final PIDController kChoreoThetaController = new PIDController(1.2, 0, 0);
 
   // Path Planner
+
+  public static PPHolonomicDriveController kPathPlannerPID =
+      new PPHolonomicDriveController(
+          new PIDConstants(5.0, 0.0, 0.0), // Translation
+          new PIDConstants(5.0, 0.0, 0.0) // Rotation
+          );
 
   public static final RobotConfig kPathPlannerConfig =
       new RobotConfig(

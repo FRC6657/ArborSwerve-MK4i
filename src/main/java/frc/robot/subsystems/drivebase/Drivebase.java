@@ -204,13 +204,6 @@ public class Drivebase extends SubsystemBase {
         });
   }
 
-  public Command driveRR(Supplier<ChassisSpeeds> speeds) {
-    return this.run(
-        () -> {
-          this.drive(speeds.get());
-        });
-  }
-
   PIDController choreoXController = DrivebaseConstants.kChoreoXController;
   PIDController choreoYController = DrivebaseConstants.kChoreoYController;
   PIDController choreoThetaController = DrivebaseConstants.kChoreoThetaController;

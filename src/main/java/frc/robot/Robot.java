@@ -5,12 +5,10 @@
 package frc.robot;
 
 import choreo.auto.AutoFactory;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.pathfinding.Pathfinding;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -31,7 +29,7 @@ import frc.robot.subsystems.vision.ApriltagCameraIO_Real;
 import frc.robot.subsystems.vision.ApriltagCameraIO_Sim;
 import frc.robot.subsystems.vision.ApriltagCameras;
 import frc.robot.subsystems.vision.VisionConstants;
-import frc.robot.util.DriveToPose;
+import frc.robot.util.LocalADStarAK;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -92,18 +90,15 @@ public class Robot extends LoggedRobot {
 
     superstructure = new Superstructure(drivebase);
 
-    driver
-        .a()
-        .whileTrue(
-            new DriveToPose(
-                drivebase,
-                () -> new Pose2d(0, 0, new Rotation2d()),
-                Units.inchesToMeters(1),
-                Units.inchesToMeters(1),
-                Units.degreesToRadians(3),
-                Units.degreesToRadians(3),
-                new Constraints(1, 1),
-                new Constraints(Units.degreesToRadians(90), Units.degreesToRadians(90))));
+    AutoBuilder.configure(
+        drivebase::getPose,
+        drivebase::resetPose,
+        drivebase::getVelocityRobotRelative,
+        (speeds, feedforwards) -> drivebase.drive(speeds),
+        DrivebaseConstants.kPathPlannerPID,
+        DrivebaseConstants.kPathPlannerConfig,
+        () -> false,
+        drivebase);
 
     autoFactory =
         new AutoFactory(
@@ -116,6 +111,9 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void robotInit() {
+
+    Pathfinding.setPathfinder(new LocalADStarAK());
+
     Logger.recordMetadata("Arborbotics", "RobotName");
 
     if (isReal()) {
@@ -139,16 +137,13 @@ public class Robot extends LoggedRobot {
                 new ChassisSpeeds(
                     -MathUtil.applyDeadband(driver.getLeftY(), 0.1)
                         * DrivebaseConstants.kMaxLinearSpeed
-                        * 0.25,
+                        * 1.0,
                     -MathUtil.applyDeadband(driver.getLeftX(), 0.1)
                         * DrivebaseConstants.kMaxLinearSpeed
-                        * 0.25,
+                        * 1.0,
                     -MathUtil.applyDeadband(driver.getRightX(), 0.1)
                         * DrivebaseConstants.kMaxAngularSpeed
-                        * 0.25)));
-
-    System.out.println("Linear Speed: " + DrivebaseConstants.kMaxLinearSpeed);
-    System.out.println("Angular Speed: " + DrivebaseConstants.kMaxAngularSpeed);
+                        * 1.0)));
 
     autoChooser.addOption(
         "TestAuto", Commands.run(() -> drivebase.drive(new ChassisSpeeds(1, 0, 0))));
